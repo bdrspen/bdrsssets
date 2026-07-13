@@ -332,7 +332,7 @@
 
         const gltfLoader = new GLTFLoader();
         gltfLoader.load(
-            'https://raw.githubusercontent.com/lokanoka/bdrspen-assets/refs/heads/main/bdrspen-model.glb',
+            'https://raw.githubusercontent.com/bdrspen/bdrsssets/main/p1.glb',
             ({ scene: model, animations }) => {
                 const box    = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
