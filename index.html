@@ -6,7 +6,7 @@
     <title>bdrspen | 3D Orbital</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Danfo&display=swap" rel="stylesheet">
 
     <script type="importmap">
     {
@@ -19,8 +19,6 @@
 
     <style>
         :root {
-            --accent:    #17c9d1;
-            --gold:      #ffd166;
             --glass:     rgba(6, 30, 42, 0.48);
             --icon-size: clamp(58px, 7.5vmin, 84px);
         }
@@ -31,7 +29,7 @@
             background: #FFD93D;
             overflow: hidden;
             height: 100vh;
-            font-family: 'Luckiest Guy', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Danfo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
             user-select: none;
             transition: background 1.2s ease;
@@ -39,7 +37,13 @@
         html.dark-theme body { background: #0b1a3a; }
 
         /* ── Three.js canvas: transparent, sits over the yellow bg ── */
-        #threeCanvas { position:fixed; inset:0; z-index:1; display:block; }
+        #threeCanvas {
+            position:fixed; inset:0; z-index:1; display:block;
+            transform-origin: top right;
+            transition: transform 1s cubic-bezier(.22,1,.36,1);
+            transform: scale(0.5);
+        }
+        html.is-home #threeCanvas { transform: scale(1); }
 
         /* ══════════════════════════════════
            LOGO CIRCLE  (top-center)
@@ -54,10 +58,6 @@
             background: var(--glass);
             backdrop-filter: blur(22px);
             -webkit-backdrop-filter: blur(22px);
-            border: 2px solid var(--accent);
-            box-shadow:
-                0 0 28px rgba(23,201,209,0.4),
-                inset 0 0 20px rgba(23,201,209,0.08);
             display: flex; align-items: center; justify-content: center;
             z-index: 20;
             animation: floatLogo 4s ease-in-out infinite;
@@ -65,29 +65,12 @@
         .orbit-logo img {
             width: 62%; height: 62%;
             object-fit: contain;
-            filter: drop-shadow(0 0 8px var(--accent));
         }
 
         @keyframes floatLogo {
             0%,100% { transform: translate(-50%,-50%) translateY(0px);   }
             50%      { transform: translate(-50%,-50%) translateY(-10px); }
         }
-
-        /* ══════════════════════════════════
-           STARBURST  (behind logo, sticker style)
-        ══════════════════════════════════ */
-        .logo-starburst {
-            position: fixed;
-            left: 50%; top: 13vh;
-            transform: translate(-50%, -50%);
-            width:  calc(var(--icon-size) * 2.5);
-            height: calc(var(--icon-size) * 2.5);
-            z-index: 19;
-            pointer-events: none;
-            animation: spinStar 26s linear infinite;
-        }
-        .logo-starburst svg { width: 100%; height: 100%; }
-        @keyframes spinStar { to { transform: translate(-50%,-50%) rotate(360deg); } }
 
         /* ══════════════════════════════════
            SUN / MOON ORBIT  (circles the logo, swaps at night)
@@ -130,18 +113,66 @@
         @keyframes orbitSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
 
         /* ══════════════════════════════════
-           SOCIAL BUTTON ROW  (bottom-center, above footer)
+           GAME MENU  (page 1 — vertical, top-mid over the model)
+        ══════════════════════════════════ */
+        .game-menu {
+            position: fixed;
+            top: 34vh; left: 50%;
+            transform: translate(-50%, 0);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 25;
+            opacity: 1;
+            pointer-events: auto;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        html.is-home .game-menu {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -24px);
+        }
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: none;
+            border: none;
+            color: #FFD93D;
+            text-shadow: 0 0 1px rgba(0,0,0,0.65), 0 2px 3px rgba(0,0,0,0.35);
+            font-family: 'Danfo', cursive;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.25s ease;
+        }
+        .menu-btn:hover { color: #4CAF50; transform: translateY(-3px) scale(1.05); }
+        .menu-btn.model-btn { font-size: 1.6rem; margin-bottom: 6px; }
+
+        /* ══════════════════════════════════
+           SOCIAL BUTTON ROW  (page 2 — bottom-center, above footer)
         ══════════════════════════════════ */
         .social-row {
             position: fixed;
             bottom: 78px; left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateY(16px);
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
             justify-content: center;
             gap: 14px;
             z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        html.is-home .social-row {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
         }
         .social-btn {
             display: flex;
@@ -149,17 +180,82 @@
             gap: 8px;
             padding: 6px 4px;
             background: none;
-            color: #2D6CDF;
+            border: none;
+            color: #FFD93D;
+            text-shadow: 0 0 1px rgba(0,0,0,0.65), 0 2px 3px rgba(0,0,0,0.35);
             text-decoration: none;
             font-size: 0.85rem;
             letter-spacing: 1px;
             text-transform: uppercase;
+            cursor: pointer;
             transition: color 0.3s ease, transform 0.25s ease;
         }
         .social-btn i { font-size: 1.05rem; }
         .social-btn:hover {
             color: #4CAF50;
             transform: translateY(-3px);
+        }
+
+        /* ══════════════════════════════════
+           CLOUDS  (white by day, glowing yellow by night)
+        ══════════════════════════════════ */
+        .clouds {
+            position: fixed;
+            inset: auto 0 0 0;
+            height: 20vh;
+            z-index: 4;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .cloud {
+            position: absolute;
+            bottom: -18px;
+            background: #FFFFFF;
+            border-radius: 60px;
+            opacity: 0.95;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transition: background 0.8s ease, box-shadow 0.8s ease;
+        }
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: #FFFFFF;
+            border-radius: 50%;
+            transition: background 0.8s ease;
+        }
+        html.dark-theme .cloud {
+            background: #FFD93D;
+            opacity: 0.9;
+            box-shadow: 0 0 22px 4px rgba(255,217,61,0.5);
+        }
+        html.dark-theme .cloud::before,
+        html.dark-theme .cloud::after {
+            background: #FFD93D;
+        }
+        .cloud-1 {
+            left: -4%; width: 220px; height: 78px;
+            animation: driftCloud 34s ease-in-out infinite;
+        }
+        .cloud-1::before { width: 110px; height: 110px; left: 10px;  top: -55px; }
+        .cloud-1::after  { width: 90px;  height: 90px;  right: 20px; top: -45px; }
+
+        .cloud-2 {
+            left: 28%; width: 170px; height: 62px; bottom: -26px;
+            animation: driftCloud 26s ease-in-out infinite reverse;
+        }
+        .cloud-2::before { width: 85px; height: 85px; left: 12px;  top: -42px; }
+        .cloud-2::after  { width: 70px; height: 70px; right: 16px; top: -34px; }
+
+        .cloud-3 {
+            left: 60%; width: 250px; height: 86px; bottom: -10px;
+            animation: driftCloud 40s ease-in-out infinite;
+        }
+        .cloud-3::before { width: 120px; height: 120px; left: 18px;  top: -60px; }
+        .cloud-3::after  { width: 100px; height: 100px; right: 24px; top: -50px; }
+
+        @keyframes driftCloud {
+            0%,100% { transform: translateX(0); }
+            50%     { transform: translateX(28px); }
         }
 
         /* ══════════════════════════════════
@@ -175,16 +271,12 @@
             font-size: 0.62rem;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: rgba(0,0,0,0.5);
+            color: #FFD93D;
+            text-shadow: 0 0 1px rgba(0,0,0,0.65), 0 1px 2px rgba(0,0,0,0.35);
             text-decoration: none;
             transition: color 0.3s ease;
         }
-        .footer-link:hover { color: #2D6CDF; }
-
-        html.dark-theme .social-btn    { color: #7fb8ff; }
-        html.dark-theme .social-btn:hover { color: #4CAF50; }
-        html.dark-theme .footer-link   { color: rgba(255,255,255,0.55); }
-        html.dark-theme .footer-link:hover { color: #17c9d1; }
+        .footer-link:hover { color: #4CAF50; }
 
         /* ══════════════════════════════════
            MOBILE — portrait
@@ -192,6 +284,9 @@
         @media (max-width: 600px) {
             :root { --icon-size: clamp(50px, 14vw, 66px); }
             .orbit-logo   { top: 10vh; }
+            .game-menu    { top: 30vh; gap: 12px; }
+            .menu-btn     { font-size: 1.05rem; }
+            .menu-btn.model-btn { font-size: 1.3rem; }
             .social-row   { bottom: 70px; gap: 10px; }
             .social-btn   { padding: 0.65rem 1rem; font-size: 0.72rem; }
         }
@@ -202,6 +297,9 @@
         @media (max-height: 500px) and (orientation: landscape) {
             :root { --icon-size: clamp(42px, 8vmin, 58px); }
             .orbit-logo  { top: 12vh; }
+            .game-menu   { top: 26vh; gap: 8px; }
+            .menu-btn    { font-size: 0.9rem; }
+            .menu-btn.model-btn { font-size: 1.1rem; }
             .social-row  { bottom: 46px; gap: 8px; }
             .social-btn  { padding: 0.5rem 0.85rem; font-size: 0.65rem; }
         }
@@ -211,19 +309,6 @@
 
     <!-- 3D model, centered -->
     <canvas id="threeCanvas"></canvas>
-
-    <!-- ── Starburst (behind logo) ── -->
-    <div class="logo-starburst">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <polygon
-                fill="var(--gold)"
-                stroke="#fff"
-                stroke-width="3"
-                points="100,4 116,58 168,34 142,84 196,92 144,110 172,158
-                        118,142 100,196 82,142 28,158 56,110 4,92 58,84
-                        32,34 84,58" />
-        </svg>
-    </div>
 
     <!-- ── Logo ── -->
     <div class="orbit-logo">
@@ -238,8 +323,45 @@
         </div>
     </div>
 
-    <!-- ── Social button row ── -->
+    <!-- ── Page 1: game-style menu, top-mid over the model ── -->
+    <div class="game-menu">
+        <button class="menu-btn model-btn" onclick="showModel()">
+            <i class="fa-solid fa-cube"></i>
+            <span>3D Model</span>
+        </button>
+
+        <a href="https://www.instagram.com/bdrspen/" class="menu-btn"
+           target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-instagram"></i>
+            <span>Instagram</span>
+        </a>
+
+        <a href="https://www.pinterest.com/bdrspen/" class="menu-btn"
+           target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-pinterest"></i>
+            <span>Pinterest</span>
+        </a>
+
+        <a href="https://www.tiktok.com/@bdrs_pen" class="menu-btn"
+           target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-tiktok"></i>
+            <span>TikTok</span>
+        </a>
+
+        <a href="https://www.instagram.com/block4kw/" class="menu-btn"
+           target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-instagram"></i>
+            <span>Block4kw</span>
+        </a>
+    </div>
+
+    <!-- ── Page 2: social row above the footer, model zoomed to corner ── -->
     <div class="social-row">
+        <button class="social-btn" onclick="hideModel()">
+            <i class="fa-solid fa-cube"></i>
+            <span>3D Model</span>
+        </button>
+
         <a href="https://www.instagram.com/bdrspen/" class="social-btn"
            target="_blank" rel="noopener noreferrer">
             <i class="fab fa-instagram"></i>
@@ -257,6 +379,12 @@
             <i class="fab fa-tiktok"></i>
             <span>TikTok</span>
         </a>
+
+        <a href="https://www.instagram.com/block4kw/" class="social-btn"
+           target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-instagram"></i>
+            <span>Block4kw</span>
+        </a>
     </div>
 
     <footer class="footer-tag">
@@ -264,6 +392,13 @@
             bader's p 2026 &middot; contact me here
         </a>
     </footer>
+
+    <!-- Clouds -->
+    <div class="clouds">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+    </div>
 
     <!-- Day / night theme check -->
     <script>
@@ -274,6 +409,12 @@
         }
         applyTimeTheme();
         setInterval(applyTimeTheme, 60000);
+    </script>
+
+    <!-- Page toggle: aside model <-> centered model + menu -->
+    <script>
+        function showModel() { document.documentElement.classList.add('is-home'); }
+        function hideModel() { document.documentElement.classList.remove('is-home'); }
     </script>
 
     <!-- ══════════════════════════════════════════════════
