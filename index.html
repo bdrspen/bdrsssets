@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bdrspen | 3D Orbital</title>
+    <title>bdrspen | Orbital</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Danfo&display=swap" rel="stylesheet">
@@ -36,9 +36,20 @@
         }
         html.dark-theme body { background: #0b1a3a; }
 
-        /* ── Three.js canvas: transparent, sits over the yellow bg ── */
+        /* ── Video background: fixed full-screen layer, swaps day/night ── */
+        #bgVideo {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ── Three.js canvas: transparent, sits over the video ── */
         #threeCanvas {
-            position:fixed; inset:0; z-index:1; display:block;
+            position: fixed; inset: 0; z-index: 2; display: block;
             transform-origin: top right;
             transition: transform 1s cubic-bezier(.22,1,.36,1);
             transform: scale(0.5);
@@ -113,7 +124,7 @@
         @keyframes orbitSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
 
         /* ══════════════════════════════════
-           GAME MENU  (page 1 — vertical, top-mid over the model)
+           GAME MENU  (page 1 — vertical, top-mid over the video)
         ══════════════════════════════════ */
         .game-menu {
             position: fixed;
@@ -307,7 +318,10 @@
 </head>
 <body>
 
-    <!-- 3D model, centered -->
+    <!-- Day/night video background -->
+    <video id="bgVideo" autoplay muted loop playsinline></video>
+
+    <!-- 3D model, layered on top of the video -->
     <canvas id="threeCanvas"></canvas>
 
     <!-- ── Logo ── -->
@@ -323,7 +337,7 @@
         </div>
     </div>
 
-    <!-- ── Page 1: game-style menu, top-mid over the model ── -->
+    <!-- ── Page 1: game-style menu, top-mid over the video ── -->
     <div class="game-menu">
         <button class="menu-btn model-btn" onclick="showModel()">
             <i class="fa-solid fa-cube"></i>
@@ -355,7 +369,7 @@
         </a>
     </div>
 
-    <!-- ── Page 2: social row above the footer, model zoomed to corner ── -->
+    <!-- ── Page 2: social row above the footer, video zoomed to corner ── -->
     <div class="social-row">
         <button class="social-btn" onclick="hideModel()">
             <i class="fa-solid fa-cube"></i>
@@ -400,7 +414,16 @@
         <div class="cloud cloud-3"></div>
     </div>
 
-    <!-- Day / night theme check -->
+    <!-- Page toggle: aside video <-> centered video + menu -->
+    <script>
+        function showModel() { document.documentElement.classList.add('is-home'); }
+        function hideModel() { document.documentElement.classList.remove('is-home'); }
+    </script>
+
+    <!-- ══════════════════════════════════════════════════
+         DAY / NIGHT THEME  (drives sun/moon, clouds, bg color)
+         The video itself is a single fixed loop — see below.
+    ══════════════════════════════════════════════════ -->
     <script>
         function applyTimeTheme() {
             const hour = new Date().getHours();
@@ -411,14 +434,21 @@
         setInterval(applyTimeTheme, 60000);
     </script>
 
-    <!-- Page toggle: aside model <-> centered model + menu -->
+    <!-- ══════════════════════════════════════════════════
+         VIDEO BACKGROUND — single video, always looping
+    ══════════════════════════════════════════════════ -->
     <script>
-        function showModel() { document.documentElement.classList.add('is-home'); }
-        function hideModel() { document.documentElement.classList.remove('is-home'); }
+        // TODO: replace with your real hosted mp4 URL
+        // e.g. https://cdn.jsdelivr.net/gh/bdrspen/bdrsssets@main/day.mp4
+        const VIDEO_URL = 'https://raw.githubusercontent.com/bdrspen/bdrsssets/main/Copy%2055495055-1030-47B5-Ac5c-228Bd6e240dc-1.m4v';
+
+        const bgVideo = document.getElementById('bgVideo');
+        bgVideo.src = VIDEO_URL;
+        bgVideo.play().catch(() => { /* autoplay may need a user gesture on some browsers */ });
     </script>
 
     <!-- ══════════════════════════════════════════════════
-         THREE.JS  —  Blender model, centered
+         THREE.JS  —  Blender model, layered over the video
     ══════════════════════════════════════════════════ -->
     <script type="module">
         import * as THREE          from 'three';
